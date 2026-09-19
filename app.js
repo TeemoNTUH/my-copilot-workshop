@@ -11,6 +11,7 @@ const input = document.getElementById('todo-input');
 const list = document.getElementById('todo-list');
 const emptyState = document.getElementById('empty-state');
 const remainingCount = document.getElementById('remaining-count');
+const clearCompletedButton = document.getElementById('clear-completed-button');
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = document.getElementById('theme-icon');
 const themeLabel = document.getElementById('theme-label');
@@ -152,6 +153,23 @@ function deleteTodoItem(id) {
   renderTodoList();
 }
 
+// 一次刪除所有已完成項目，刪除前先讓使用者確認
+function clearCompletedTodos() {
+  const completedItems = todos.filter((todo) => todo.completed);
+  if (completedItems.length === 0) {
+    return;
+  }
+
+  const shouldClear = window.confirm(`確定要清除 ${completedItems.length} 筆已完成事項嗎？`);
+  if (!shouldClear) {
+    return;
+  }
+
+  todos = todos.filter((todo) => !todo.completed);
+  saveTodos();
+  renderTodoList();
+}
+
 // 依照目前資料重新繪製整份清單
 function renderTodoList() {
   list.replaceChildren();
@@ -195,6 +213,10 @@ function renderTodoList() {
   // 底部同步顯示未完成項目數量
   const remainingItems = todos.filter((todo) => !todo.completed).length;
   remainingCount.textContent = `未完成:${remainingItems} 項`;
+
+  // 沒有已完成項目時停用按鈕，避免使用者按了沒有反應
+  const completedItemsCount = todos.length - remainingItems;
+  clearCompletedButton.disabled = completedItemsCount === 0;
 }
 
 // 送出表單時新增待辦，空白內容則直接忽略
@@ -238,6 +260,11 @@ filterControls.addEventListener('click', (event) => {
 
   currentFilter = button.dataset.filter;
   renderTodoList();
+});
+
+// 點下按鈕後清除所有已完成項目
+clearCompletedButton.addEventListener('click', () => {
+  clearCompletedTodos();
 });
 
 // 主題切換按鈕會在淺色與深色之間切換，並記住使用者選擇
